@@ -15,7 +15,14 @@ const char TAB = '\t';
 const unsigned int INPUT_IDX = 1;
 const unsigned int OUTPUT_IDX = 2;
 const unsigned int SUCCESS = 0;
-const double DONE_INIT = 0.0;
+const unsigned int FAIL = 1;
+const unsigned int QUERY_COMPLEX_NAME = 0;
+const unsigned int TARGET_COMPLEX_NAME = 1;
+const unsigned int QUERY_CHAIN_LIST = 2;
+const unsigned int TARGET_CHAIN_LIST = 3;
+const unsigned int TM_SCORE_BASED_QUERY_LEN = 4;
+const unsigned int TM_SCORE_BASED_TARGET_LEN = 5;
+const unsigned int PARSING_FIELD_VALE_DONE = 5;
 
 struct Fields {
     Fields() {}
@@ -24,26 +31,26 @@ struct Fields {
         unsigned int idx = 0;
         while (getline(iss, buffer, TAB)) {
             switch (idx++) {
-                case 0:
+                case QUERY_COMPLEX_NAME:
                     qComplex = buffer.substr(0,buffer.find(DOT));
                     break;
-                case 1:
+                case TARGET_COMPLEX_NAME:
                     tComplex = buffer.substr(0,buffer.find(DOT));;
                     break;
-                case 2:
+                case QUERY_CHAIN_LIST:
                     qChains = buffer;
                     break;
-                case 3:
+                case TARGET_CHAIN_LIST:
                     tChains = buffer;
                     break;
-                case 4:
+                case TM_SCORE_BASED_QUERY_LEN:
                     qTmScore = stod(buffer);
                     break;
-                case 5:
+                case TM_SCORE_BASED_TARGET_LEN:
                     tTmScore = stod(buffer);
                     break;
             }
-            if (idx > 5)
+            if (idx > PARSING_FIELD_VALE_DONE)
                 return;
         }
     }
@@ -57,6 +64,11 @@ struct Fields {
 };
 
 int main(int argc, char* argv[]) {
+    if (argc < 3) {
+        std::cerr << "INPUT FILE AND OTPUT FILE ARE REQUIRED!"  << std::endl;
+        return FAIL;
+    }
+
     std::string iFile = argv[INPUT_IDX];
     std::string oFile = argv[OUTPUT_IDX];
     std::map<std::pair<std::string, std::string>, Fields> bestAlignment;
