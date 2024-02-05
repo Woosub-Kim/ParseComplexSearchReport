@@ -1,4 +1,3 @@
-#include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -72,32 +71,41 @@ int main(int argc, char* argv[]) {
     std::string iFile = argv[INPUT_IDX];
     std::string oFile = argv[OUTPUT_IDX];
     std::map<std::pair<std::string, std::string>, Fields> bestAlignment;
+    std::ifstream iFileReader = std::ifstream(iFile);
     std::ofstream oFileWriter = std::ofstream(oFile);
+
 #pragma omp parallel
     {
-        std::ifstream iFileReader = std::ifstream(iFile);
         std::string line;
         std::istringstream iss;
         std::string buffer;
         Fields fields;
         std::pair<std::string, std::string> key;
+
 #pragma omp while
+
         while(getline(iFileReader, line)) {
             fields = Fields(line, iss, buffer);
             key = {fields.qComplex, fields.tComplex};
+
             if (bestAlignment.find(key) == bestAlignment.end()) {
                 bestAlignment.insert({key, fields});
                 continue;
             }
+
             if (bestAlignment[key].qTmScore < fields.qTmScore) {
                 bestAlignment[key] = fields;
             }
         }
+
     }
 
     for (auto &iter: bestAlignment) {
         oFileWriter << iter.second.qComplex << TAB << iter.second.tComplex << TAB << iter.second.qChains << TAB << iter.second.tChains<< TAB << iter.second.qTmScore << TAB << iter.second.tTmScore << NL;
     }
+    iFileReader.close();
+    oFileWriter.close();
+
     std::cout << "process succeed"  << std::endl;
     return SUCCESS;
 }
