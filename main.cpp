@@ -81,31 +81,25 @@ int main(int argc, char* argv[]) {
         std::string buffer;
         Fields fields;
         std::pair<std::string, std::string> key;
-
 #pragma omp while
-
         while(getline(iFileReader, line)) {
             fields = Fields(line, iss, buffer);
             key = {fields.qComplex, fields.tComplex};
-
             if (bestAlignment.find(key) == bestAlignment.end()) {
                 bestAlignment.insert({key, fields});
                 continue;
             }
-
-            if (bestAlignment[key].qTmScore < fields.qTmScore) {
-                bestAlignment[key] = fields;
-            }
+            bestAlignment[key] = fields.qTmScore > bestAlignment[key].qTmScore ? fields : bestAlignment[key];
         }
-
     }
 
     for (auto &iter: bestAlignment) {
-        oFileWriter << iter.second.qComplex << TAB << iter.second.tComplex << TAB << iter.second.qChains << TAB << iter.second.tChains<< TAB << iter.second.qTmScore << TAB << iter.second.tTmScore << NL;
+        Fields &fields = iter.second;
+        oFileWriter << fields.qComplex << TAB << fields.tComplex << TAB << fields.qChains << TAB << fields.tChains<< TAB << fields.qTmScore << TAB << fields.tTmScore << NL;
     }
+
     iFileReader.close();
     oFileWriter.close();
-
     std::cout << "process succeed"  << std::endl;
     return SUCCESS;
 }
